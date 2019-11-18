@@ -37,7 +37,61 @@
       </form>
     </div>
   </div>
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+              aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Modal title</h4>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+      $('.input_sub').on('click', function (e) {
+        e.preventDefault();
+        var userName = $('.input_txt').val().trim();
+        var userPwd = $('.input_pass').val().trim();
+        // 3.非空判断
+        if (userName == '' || userPwd == '') {
+          $('.modal-body').text('亲，用户名和密码不能为空哦');
+          $('#myModal').modal();
+          return;
+        }
+        // 4.使用ajax请求数据，做页面渲染
+        $.ajax({
+          type: 'post',
+          url: 'http://localhost:8080/api/v1/admin/user/login',
+          data: {
+            username: userName,
+            password: userPwd
+          },
+          success: function (res) {
+            $('.modal-body').text(res.msg);
+            $('#myModal').modal();
+            if (res.code == 200) {
+              window.localStorage.setItem('token', res.token);
+              $('#myModal').on('hidden.bs.modal', function (e) {
+                window.location.href = './index.html';
+              })
 
+            }
+          }
+        })
+      })
+
+    })
+
+  </script>
 </body>
 
 </html>
