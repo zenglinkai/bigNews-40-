@@ -15,6 +15,7 @@
   <script src="./libs/jquery-1.12.4.min.js"></script>
   <!-- 引入bootstrap的js文件 -->
   <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
+  <script src="./libs/http.js"></script>
 </head>
 
 <body>
@@ -50,7 +51,7 @@
           ...
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">确定</button>
+          <button type="button" class="btn btn-success" data-dismiss="modal">确定</button>
         </div>
       </div>
     </div>
@@ -71,7 +72,7 @@
         $.ajax({
           type: 'post',
           // url: 'http://localhost:8080/api/v1/admin/user/login',
-          url:window.BigNew.user_login,
+          url: window.BigNew.user_login,
           data: {
             username: userName,
             password: userPwd

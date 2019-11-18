@@ -13,6 +13,7 @@
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 导入bootstrap的js文件 -->
     <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
+    <script src="./libs/http.js"></script>
 </head>
 
 <body>
@@ -54,15 +55,14 @@
 
         </div>
     </div>
-    <script src="./libs/http.js"></script>
     <script>
         $(function (e) {
             $.get({
                 // url: 'http://localhost:8080/api/v1/admin/user/info',
                 url:window.BigNew.user_info,
-                headers: {
-                    Authorization: window.localStorage.getItem('token')
-                },
+                // headers: {
+                //     Authorization: window.localStorage.getItem('token')
+                // },
                 success: function (res) {
                     $('.user_info>img').attr('src', res.data.userPic);
                     $('.user_info>span').html('欢迎&nbsp;&nbsp;' + res.data.nickname);
