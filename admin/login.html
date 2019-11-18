@@ -70,7 +70,8 @@
         // 4.使用ajax请求数据，做页面渲染
         $.ajax({
           type: 'post',
-          url: 'http://localhost:8080/api/v1/admin/user/login',
+          // url: 'http://localhost:8080/api/v1/admin/user/login',
+          url:window.BigNew.user_login,
           data: {
             username: userName,
             password: userPwd
