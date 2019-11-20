@@ -31,9 +31,12 @@
             <div class="level01"><a href="#"><i class="iconfont icon-icon-article"></i><span>文章管理</span><b
                         class="iconfont icon-arrowdownl"></b></a></div>
             <ul class="level02">
-                <li><a href="article_list.html" target="main_frame"><i class="iconfont icon-previewright"></i><span>文章列表</span></a></li>
-                <li><a href="article_release.html" target="main_frame"><i class="iconfont icon-previewright"></i><span>发表文章</span></a></li>
-                <li><a href="article_category.html" target="main_frame"><i class="iconfont icon-previewright"></i><span>文章类别管理</span></a>
+                <li><a href="article_list.html" target="main_frame"><i
+                            class="iconfont icon-previewright"></i><span>文章列表</span></a></li>
+                <li><a href="article_release.html" target="main_frame"><i
+                            class="iconfont icon-previewright"></i><span>发表文章</span></a></li>
+                <li><a href="article_category.html" target="main_frame"><i
+                            class="iconfont icon-previewright"></i><span>文章类别管理</span></a>
                 </li>
             </ul>
 
@@ -59,7 +62,7 @@
         $(function (e) {
             $.get({
                 // url: 'http://localhost:8080/api/v1/admin/user/info',
-                url:window.BigNew.user_info,
+                url: window.BigNew.user_info,
                 // headers: {
                 //     Authorization: window.localStorage.getItem('token')
                 // },
@@ -69,11 +72,35 @@
                     $('.user_center_link>img').attr('src', res.data.userPic)
                 }
             })
-            $('.logout').on('click',function(){
+            // 给退出按钮添加点击事件
+            $('.logout').on('click', function () {
+                // 点击删除token令牌
                 window.localStorage.removeItem('token');
-                window.location.href='./login.html'
+                // 点击时返回登录页面
+                window.location.href = './login.html'
+            })
+
+
+            // 给level01添加点击事件
+            $('.level01').on('click', function () {
+                // console.log(this)
+                $(this).addClass('active').siblings('div').removeClass('active');
+                // console.log($(this))
+                if ($(this).index() === 1) {
+                    //让当前的ul如果是折叠就展开，如果是展开的就折叠
+                    $('ul.level02').toggle();
+                    //jQuery对象不能这样去触发a标签的默认的跳转事件，只有a标签的原生DOM对象才会在点击的时候触发a标签的默认的跳转行为
+                    $('ul.level02 li:eq(0)>a')[0].click();
+
+                    $(this).find('b').toggleClass('rotate0');
+                }
+            })
+            //点击li标签的时候，给当前点击的li标签添加一个样式类
+            $('ul.level02 li').on('click', function () {
+                $(this).addClass('active').siblings('li').removeClass('active');
             })
         })
+
     </script>
 </body>
 

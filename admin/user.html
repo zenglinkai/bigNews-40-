@@ -74,7 +74,7 @@
             $.get({
                 url: BigNew.user_detail,
                 success: function (res) {
-                    console.log(res)
+                    // console.log(res)
                     if (res.code === 200) {
                         for (var key in res.data) {
                             $('input.' + key).val(res.data[key])
@@ -94,7 +94,7 @@
             })
 
             $('button.btn-edit').on('click', function (e) {
-                e.preventDefaul();
+                e.preventDefault();
                 var form = $('#form')[0];
                 var data = new FormData(form);
                 $.post({
