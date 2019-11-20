@@ -69,6 +69,10 @@
                     $('.user_center_link>img').attr('src', res.data.userPic)
                 }
             })
+            $('.logout').on('click',function(){
+                window.localStorage.removeItem('token');
+                window.location.href='./login.html'
+            })
         })
     </script>
 </body>
