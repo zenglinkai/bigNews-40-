@@ -69,29 +69,69 @@
             </form>
         </div>
     </div>
-    <script>   
-        $(function(){
+    <script>
+        $(function () {
             $.get({
-                url:BigNew.user_detail,
-                success:function(res){
+                url: BigNew.user_detail,
+                success: function (res) {
                     console.log(res)
-                    if(res.code===200){
-                        for(var key in res.data){
-                            $('input.'+key).val(res.data[key])
+                    if (res.code === 200) {
+                        for (var key in res.data) {
+                            $('input.' + key).val(res.data[key])
                         }
+                        $('.user_pic').attr('src', res.data.userPic)
                     }
                 }
             });
 
-            $('#exampleInputFile').on('change',function(){
+            $('#exampleInputFile').on('change', function () {
                 // console.log(this.files[0])
                 // 将选择的图片转换成一个url地址
                 var imgIcon = this.files[0];
                 // 使用window上的URL对象将图片的信息转换成url地址
-                var url =URL.createObjectURL(imgIcon);
-                $('.user_pic').attr('src',url)
+                var url = URL.createObjectURL(imgIcon);
+                $('.user_pic').attr('src', url)
             })
+
+            $('button.btn-edit').on('click', function (e) {
+                e.preventDefaul();
+                var form = $('#form')[0];
+                var data = new FormData(form);
+                $.post({
+                    url: BigNew.user_edit,
+                    data: data,
+                    // 不需要设置请求头   
+                    contentType: false,
+                    // 不需要再进行编码了  
+                    processData: false,
+                    success: function (res) {
+                        if (res.code == 200) {
+                            // window.location.reload();
+                            // parent.window.location.reload()
+
+                            $.get({
+                                // url: 'http://localhost:8080/api/v1/admin/user/info',
+                                url: window.BigNew.user_info,
+                                // headers: {
+                                //     Authorization: window.localStorage.getItem('token')
+                                // },
+                                success: function (res) {
+                                    parent.$('.user_info>img').attr('src', res.data.userPic);
+                                    parent.$('.user_info>span').html('欢迎&nbsp;&nbsp;' + res.data.nickname);
+                                    parent.$('.user_center_link>img').attr('src', res.data.userPic);
+                                    // 在当前页面刷新
+                                    window.location.reload();
+                                }
+                            })
+                        }
+
+                    }
+                })
+
+            })
+
         })
+
     </script>
 </body>
 
