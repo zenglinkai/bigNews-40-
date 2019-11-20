@@ -82,6 +82,16 @@
                     }
                 }
             });
+
+            $('#exampleInputFile').on('change',function(){
+                // console.log(this.files[0])
+                // 将选择的图片转换成一个url地址
+                var imgIcon = this.files[0];
+                // 使用window上的URL对象将图片的信息转换成url地址
+                var url =URL.createObjectURL(imgIcon);
+                $('.user_pic').attr('src',url)
+            })
+        })
     </script>
 </body>
 
