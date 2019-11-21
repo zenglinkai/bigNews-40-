@@ -13,6 +13,8 @@
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 引入模板引擎js文件 -->
     <script src="./libs/template-web.js"></script>
+    <!-- 引入路径JS文件 -->
+    <script src="./libs/http.js"></script>
 </head>
 
 <body>
@@ -25,11 +27,11 @@
                 <div class="col-xs-6">
                     <form class="form-inline">
                         <select id="selCategory" name="" class="form-control input-sm">
-                            <option value="">所有分类</option>
+                            <!-- <option value="">所有分类</option>
                             <option>未分类</option>
                             <option>奇趣事</option>
                             <option>会生活</option>
-                            <option>爱旅行</option>
+                            <option>爱旅行</option> -->
                         </select>
                         <select id="selStatus" name="" class="form-control input-sm">
                             <option value="">所有状态</option>
@@ -72,6 +74,25 @@
             </div>
         </div>
     </div>
+    <!-- 新建模板引擎 -->
+    <script type="text/html" id="list">
+            <option value="">所有分类</option>
+        {{each data}}
+            <option>{{$value.name}}</option>
+        {{/each}}
+    </script>
+    <script>
+        // 入口函数
+        $(function () {
+            $.get({
+                url: BigNew.category_list,
+                success: function (res) {
+                    var htmlStr=template('list',res)
+                    $('#selCategory').html(htmlStr)
+                }
+            })
+        })
+    </script>
 </body>
 
 </html>
