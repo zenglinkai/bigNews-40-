@@ -11,6 +11,13 @@
     <link rel="stylesheet" href="./css/iconfont.css">
     <link rel="stylesheet" href="./css/main.css">
     <script src="./libs/jquery-1.12.4.min.js"></script>
+
+    <!-- 引入bootstrap的js文件 -->
+    <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- 引入jQuery的分页插件js文件 -->
+    <script src="./libs/josecebe-twbs-pagination-5103bc4/jquery.twbsPagination.min.js"></script>
+
     <!-- 引入模板引擎js文件 -->
     <script src="./libs/template-web.js"></script>
     <!-- 引入路径JS文件 -->
@@ -71,6 +78,7 @@
                 </tbody>
             </table>
             <div class="row text-center">
+                <ul id="pagination-demo" class="pagination-sm"></ul>
             </div>
         </div>
     </div>
@@ -78,7 +86,7 @@
     <script type="text/html" id="list">
             <option value="">所有分类</option>
         {{each data}}
-            <option>{{$value.name}}</option>
+            <option value="{{$value.id}}">{{$value.name}}</option>
         {{/each}}
     </script>
 
@@ -92,8 +100,8 @@
                 <td class="text-center">{{$value.date}}</td>
                 <td class="text-center">{{$value.state}}</td>
                 <td class="text-center">
-                    <a href="article_edit.html" class="btn btn-default btn-xs">编辑</a>
-                    <a href="javascript:void(0);" class="btn btn-danger btn-xs delete">删除</a>
+                    <a href="article_edit.html" data-id="{{$value.id}}" class="btn btn-default btn-xs">编辑</a>
+                    <a href="javascript:void(0);" data-id="{{$value.id}}" class="btn btn-danger btn-xs delete">删除</a>
                 </td>
             </tr>
             {{/each}}
@@ -108,19 +116,125 @@
                     $('#selCategory').html(htmlStr)
                 }
             })
+            // 添加一个全局变量
+            myPage = 1;
+            myPerpage = 10;
             $.get({
                 url: BigNew.article_query,
                 data: {
-                    type:$('#selCategory').val(),
-                    state:$('#selStatus').val(),
-                    page:1,
-                    perpage:10
+                    type: $('#selCategory').val(),
+                    state: $('#selStatus').val(),
+                    page: myPage,
+                    perpage: myPerpage
                 },
                 success: function (res) {
                     // console.log(res)
-                    var htmlStr=template('art-list',res)
+                    var htmlStr = template('art-list', res)
                     $('tbody').html(htmlStr)
+                    // 引入分页插件中的方法生成页码条
+                    $('#pagination-demo').twbsPagination({
+                        // z总页数
+                        totalPages: res.data.totalPage,
+                        // 一排显示7页
+                        visiblePages: 7,
+                        first: '首页',
+                        prev: '上一页',
+                        next: '下一页',
+                        last: '尾页',
+                        onPageClick: function (event, page) {
+                            // console.log(page);
+
+                            if(page===1){
+                                return;
+                            }
+                            myPage = page;
+                            // console.log(page);
+                            $.get({
+                                url: BigNew.article_query,
+                                data: {
+                                    type: $('#selCategory').val(),
+                                    state: $('#selStatus').val(),
+                                    page: myPage,
+                                    perpage: myPerpage
+                                },
+                                success: function (res) {
+                                    // console.log(res);
+                                    var htmlStr = template('art-list', res);
+                                    $('tbody').html(htmlStr);
+                                }
+                            })
+                        }
+                    })
                 }
+            })
+
+            // 给筛选按钮添加点击事件
+            $('#btnSearch').on('click', function (e) {
+                // 阻止按钮默认行为
+                e.preventDefault();
+                $.get({
+                    url: BigNew.article_query,
+                    data: {
+                        type: $('#selCategory').val(),
+                        state: $('#selStatus').val(),
+                        //将page设置为1，因为在筛选的时候我们不确定用户点击到了哪一页，我们应该让用户先筛选的时候，从数据的第一页开始显示
+                        page: 1,
+                        perpage: myPerpage
+                    },
+                    success: function (res) {
+                        // console.log(res);
+                        if (res.code === 200 && res.data.data.length !== 0) {
+                            var htmlStr = template('art-list', res)
+                            $('tbody').html(htmlStr);
+                            // 有数据时显示页码
+                            $('#pagination-demo').show();
+                            //更改分页的总页码数
+                            $('#pagination-demo').twbsPagination('changeTotalPages', res.data.totalPage, 1)
+                        } else {
+                            $('tbody').html('<tr><td style="font-size:20px;color:red;text-align: center;"colspan=6>亲，暂时没有那方面的文章</td></tr>');
+                            $('#pagination-demo').hide();
+                        }
+                    }
+                })
+            })
+
+            // 删除按钮点击事件
+            $('tbody').on('click', '.delete', function () {
+                // alert('6666')
+                // 获取点击文章ID
+                var deleteId = $(this).attr('data-id')
+                // console.log(deleteId);
+                if (confirm('你确定要删除该文章吗？')) {
+                    $.post({
+                        url: BigNew.article_delete,
+                        data: {
+                            id: deleteId
+                        },
+                        success: function (res) {
+                            console.log(res);
+                            if (res.code === 204) {
+                                $.get({
+                                    url: BigNew.article_query,
+                                    data: {
+                                        type: $('#selCategory').val(),
+                                        state: $('#selStatus').val(),
+                                        page: myPage,
+                                        perpage: myPerpage
+                                    },
+                                    success: function (res) {
+                                        console.log(res);
+                                        var htmlStr = template('art-list', res);
+                                        $('tbody').html(htmlStr);
+                                        $('#pagination-demo').twbsPagination('changeTotalPages', res.data.totalPage,1);
+                                    }
+                                })
+                            }
+
+
+                        }
+                    })
+                }
+
             })
         })
     </script>
