@@ -100,7 +100,7 @@
                 <td class="text-center">{{$value.date}}</td>
                 <td class="text-center">{{$value.state}}</td>
                 <td class="text-center">
-                    <a href="article_edit.html" data-id="{{$value.id}}" class="btn btn-default btn-xs">编辑</a>
+                    <a href="article_edit.html?id={{$value.id}}" data-id="{{$value.id}}" class="btn btn-default btn-xs">编辑</a>
                     <a href="javascript:void(0);" data-id="{{$value.id}}" class="btn btn-danger btn-xs delete">删除</a>
                 </td>
             </tr>
@@ -144,7 +144,7 @@
                         onPageClick: function (event, page) {
                             // console.log(page);
 
-                            if(page===1){
+                            if (page === 1) {
                                 return;
                             }
                             myPage = page;
@@ -225,7 +225,7 @@
                                         console.log(res);
                                         var htmlStr = template('art-list', res);
                                         $('tbody').html(htmlStr);
-                                        $('#pagination-demo').twbsPagination('changeTotalPages', res.data.totalPage,1);
+                                        $('#pagination-demo').twbsPagination('changeTotalPages', res.data.totalPage, 1);
                                     }
                                 })
                             }
