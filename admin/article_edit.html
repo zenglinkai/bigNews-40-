@@ -12,8 +12,19 @@
     <link rel="stylesheet" href="css/main.css">
     <!-- jq -->
     <script src="./libs/jquery-1.12.4.min.js"></script>
+    <!-- 引入日期CSS和js文件 -->
+    <script src="./libs/jedate/js/jedate.js"></script>
+
+    <link rel="stylesheet" href="./libs/jedate/css/jeDate-test.css">
+    <link rel="stylesheet" href="./libs/jedate/css/jedate.css">
+
+    <!-- 引入王编辑器JS文件 -->
+    <script src="./libs/wangEditor.js"></script>
+
     <!-- 模板引擎 -->
     <script src="./libs/template-web.js"></script>
+    <!-- 引入地址JS文件 -->
+    <script src="./libs/http.js"></script>
 </head>
 
 <body>
@@ -23,10 +34,11 @@
         </div>
         <div class="container-fluid common_con">
             <form class="form-horizontal article_form" id="form">
+                <input type="hidden" name='id' id="categoryId">
                 <div class="form-group">
                     <label for="inputTitle" class="col-sm-2 control-label">文章标题：</label>
                     <div class="col-sm-10">
-                        <input type="text" name="title" class="form-control title" id="inputTitle" value="文章标题文字">
+                        <input type="text" name="title" class="form-control title" id="inputTitle" placeholder="文章标题文字">
                     </div>
                 </div>
                 <div class="form-group">
@@ -38,24 +50,29 @@
                 </div>
                 <div class="form-group">
                     <label for="inputCategory" class="col-sm-2 control-label">文章类别：</label>
-                    <div class="col-sm-4">
+                    <div class="col-sm-2">
                         <select class="form-control category" name="categoryId">
-                            <option>类别一</option>
-                            <option>类别二</option>
-                            <option>类别三</option>
-                            <option selected>类别四</option>
-                            <option>类别五</option>
+                            <!-- <option>类别一</option>
+                                    <option>类别二</option>
+                                    <option>类别三</option>
+                                    <option selected>类别四</option>
+                                    <option>类别五</option> -->
                         </select>
                     </div>
                 </div>
                 <div class="form-group">
                     <label class="col-sm-2 control-label">发布时间：</label>
-                    <div class="col-sm-4">
+                    <div class="jeinpbox col-sm-4">
+                        <input type="text" name='date' class="jeinput" id="testico" placeholder="YYYY-MM-DD">
+                        <div class="icons jebtns"
+                            onclick="jeDate('#testico',{zIndex:99999,trigger:false,format: 'YYYY-MM-DD'})">
+                        </div>
                     </div>
                 </div>
                 <div class="form-group">
                     <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
-                    <div class="col-sm-10">
+                    <div id="editor" class="col-sm-8">
+                        <p>欢迎使用 <b>wangEditor</b> 富文本编辑器</p>
                     </div>
                 </div>
                 <div class="form-group">
@@ -67,6 +84,164 @@
             </form>
         </div>
     </div>
+    <!-- 文章编辑模板 -->
+    <script type="text/html" id="category-list">
+        <!-- 定义一个模板用来渲染文章类别信息 -->
+    {{each data}}
+    <option value='{{$value.id}}'>{{$value.name}}</option>
+    {{/each}}
+    </script>
+    <script>
+        // 入口函数
+        $(function () {
+            //当页面一加载我们需要 预览图片、时间选择，富文本编辑器
+            $('#inputCover').on('change', function () {
+                // console.dir(this);
+                var img = this.files[0];
+                // 把图片通过URL的createObjectURL方法变成url地址
+                var url = URL.createObjectURL(img);
+                $('img.article_cover').attr('src',url)
+            })
+
+            // 时间编辑
+            jeDate("#testico", {
+                format: "YYYY年MM月DD日",
+                isTime: true,
+                festival: false,
+                zIndex: 99999,
+                onClose: true,
+            })
+
+            // 富文本编辑器
+            var E = window.wangEditor
+            var editor = new E('#editor')
+            // 或者 var editor = new E( document.getElementById('editor') )
+            editor.create()
+
+            //页面逻辑处理
+
+            //获取并且渲染文章分类信息
+            $.get({
+                url: BigNew.category_list,
+                success: function (res) {
+                    // console.log(res);
+                    if (res.code === 200) {
+                        var htmlStr = template('category-list', res);
+                        // console.log(htmlStr);
+                        $('select.category').html(htmlStr)
+                    }
+
+                }
+            })
+
+            // 获取ID值
+            // var artId = window.location.search;
+            // console.log(artId);
+
+            //用来将接收的字符串参数转换为对象
+            function searchStr2obj(str) {
+                str = str.slice(1);
+                searchArr = str.split('&');
+                var obj = {};
+                for (var key in searchArr) {
+                    var tempArr = searchArr[key].split('=');
+                    obj[tempArr[0]] = tempArr[1];
+                }
+                return obj;
+            };
+
+            var artId = searchStr2obj(window.location.search).id;
+            // console.log(artId);
+
+            //根据id获取文章信息，在页面渲染
+            $.get({
+                url: BigNew.article_search,
+                data: {
+                    id: artId
+                },
+                success: function (res) {
+                    if (res.code == 200) {
+                        //将获得的数据对应填充到表单元素中
+                        $('#inputTitle').val(res.data.title);
+                        $('img.article_cover').attr('src', res.data.cover);
+                        $('#testico').val(res.data.date);
+                        $('select.category').val(res.data.categoryId);
+                        $('#categoryId').val(res.data.id);
+                        editor.txt.html(res.data.content);
+                    }
+                }
+            })
+            // 先转换为原生
+            var form = $('#form')[0];
+            // 使用formData获取表单中的数据
+            var fd = new FormData(form);
+            // 我们使用formData获取表单中的数据的时候，这个表单元素必须有name属性
+            // 数据中缺少content和state的数据
+            fd.append('content', editor.txt.html())
+            fd.append('state', '已发布')
+
+            //修改按钮注册点击事件,发布
+            $('button.btn-edit').on('click', function (e) {
+                //阻止默认行为
+                e.preventDefault();
+
+                //获得数据
+                var form = $('#form')[0];
+                var fd = new FormData(form);
+                // 我们使用formData获取表单中的数据的时候，这个表单元素必须有name属性
+                // 数据中缺少content和state的数据
+                fd.append('content', editor.txt.html());
+                fd.append('state', '已发布');
+
+                //发送请求将数据添加到数据库中
+                $.post({
+                    url: BigNew.article_edit,
+                    data: fd,
+                    //阻止编码
+                    processData: false,
+                    //不需要设置头部
+                    contentType: false,
+                    success: function (res) {
+                        // console.log(res);
+                        if (res.code == 200) {
+                            alert('修改成功');
+                            window.history.back();
+                        }
+                    }
+                })
+            })
+            //修改按钮注册点击事件，存草稿
+            $('button.btn-draft').on('click', function (e) {
+                //阻止默认行为
+                e.preventDefault();
+
+                //获得数据
+                var form = $('#form')[0];
+                var fd = new FormData(form);
+                // 我们使用formData获取表单中的数据的时候，这个表单元素必须有name属性
+                // 数据中缺少content和state的数据
+                fd.append('content', editor.txt.html());
+                // fd.append('state', '已发布');
+
+                //发送请求将数据添加到数据库中
+                $.post({
+                    url: BigNew.article_edit,
+                    data: fd,
+                    //阻止编码
+                    processData: false,
+                    //不需要设置头部
+                    contentType: false,
+                    success: function (res) {
+                        // console.log(res);
+                        if (res.code == 200) {
+                            alert('存档成功');
+                            window.history.back();
+                        }
+                    }
+                })
+            })
+        })
+    </script>
 </body>
 
 </html>
