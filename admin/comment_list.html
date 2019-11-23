@@ -12,6 +12,10 @@
   <link rel="stylesheet" href="css/main.css">
   <script src="./libs/jquery-1.12.4.min.js"></script>
   <script src="./libs/template-web.js"></script>
+  <!-- 引入地址JS文件 -->
+  <script src="./libs/http.js"></script>
+  <!-- 添加分页插件 -->
+  <script src="./libs/jquery.twbsPagination.js"></script>
 </head>
 
 <body>
@@ -32,7 +36,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
+          <!-- <tr>
             <td>小周</td>
             <td>这是一条测试评论，欢迎光临</td>
             <td>《世界，你好》</td>
@@ -138,28 +142,175 @@
               <a href="javascript:editTr( 'rejected',11 );" class="btn btn-warning btn-xs">拒绝</a>
               <a href="javascript:editTr( 'trashed',11 );" class="btn btn-danger btn-xs">删除</a>
             </td>
-          </tr>
+          </tr> -->
         </tbody>
       </table>
       <div class="row text-center">
-        <ul class="pagination pagination-sm">
-          <li class="page-item first disabled"><a href="#" class="page-link">首页</a></li>
-          <li class="page-item prev disabled"><a href="#" class="page-link">上一页</a></li>
-          <li class="page-item active"><a href="#" class="page-link">1</a></li>
-          <li class="page-item"><a href="#" class="page-link">2</a></li>
-          <li class="page-item"><a href="#" class="page-link">3</a></li>
-          <li class="page-item"><a href="#" class="page-link">4</a></li>
-          <li class="page-item"><a href="#" class="page-link">5</a></li>
-          <li class="page-item"><a href="#" class="page-link">6</a></li>
-          <li class="page-item"><a href="#" class="page-link">7</a></li>
-          <li class="page-item next"><a href="#" class="page-link">下一页</a></li>
-          <li class="page-item last"><a href="#" class="page-link">尾页</a></li>
-        </ul>
-        <ul id="pagination" class="pagination-sm"></ul>
+        <ul id="pagination-demo" class="pagination-sm"></ul>
       </div>
 
     </div>
   </div>
+  <script type="text/html" id="comment-list">
+    {{each data.data}}
+      {{if $value.state==='待审核'}}
+        <tr class="danger">
+      {{else}}
+        <tr>
+      {{/if}}
+        <td>{{$value.author}}</td>
+        <td>{{$value.content}}</td>
+        <td>{{$value.title}}</td>
+        <td>{{$value.date}} {{$value.time}}</td>
+        <td>{{$value.state}}</td>
+        <td class="text-center">
+          {{if $value.state==='待审核'}}
+          <a href="javascript:editTr( 'rejected',11 );" data-id='{{$value.id}}' class="btn btn-warning btn-xs btn-pass">批准</a>
+          {{else if $value.state==='已通过'}}
+          <a href="javascript:editTr( 'rejected',11 );" data-id='{{$value.id}}' class="btn btn-primary btn-xs btn-deny">拒绝</a>
+          {{else if $value.state === '已拒绝'}}
+              <a href="javascript:editTr( 'rejected',11 );" data-id='{{$value.id}}' class="btn btn-success btn-xs btn-pass">通过</a>
+            {{/if}}
+          <a href="javascript:void(0);;" data-id='{{$value.id}}' class="btn btn-danger btn-xs btn-delete">删除</a>
+        </td>
+      </tr>
+    {{/each}}
+  </script>
+  <script>
+    myPerpage = 10;
+    myPage = 1;
+    $(function () {
+      $.get({
+        url: BigNew.comment_list,
+        data: {
+          page: myPage,
+          perpage: myPerpage
+        },
+        success: function (res) {
+          // console.log(res);
+          if (res.code === 200) {
+            var htmlStr = template('comment-list', res)
+            console.log(htmlStr);
+            $('tbody').html(htmlStr)
+          }
+          // 数据添加成功，添加分页条
+          $('#pagination-demo').twbsPagination({
+            totalPages: res.data.totalPage,
+            visiblePages: 7,
+            first: '首页',
+            prev: '上一页',
+            next: '下一页',
+            last: '尾页',
+            onPageClick: function (event, page) {
+              // console.log(event);
+              myPage = page;
+              $.get({
+                url: BigNew.comment_list,
+                data: {
+                  page: myPage,
+                  perpage: myPerpage
+                },
+                success: function (res) {
+                  if (res.code == 200) {
+                    var htmlStr = template('comment-list', res);
+                    // console.log(htmlStr);
+                    $('tbody').html(htmlStr);
+                  }
+                }
+              })
+
+            }
+          })
+        }
+
+      })
+      //给拒绝按钮注册事件  comment_reject
+      $('tbody').on('click', '.btn-deny', function (e) {
+        e.preventDefault();
+        var id = $(this).attr('data-id');
+        $.post({
+          url: BigNew.comment_reject,
+          data: {
+            id: id
+          },
+          success: function (res) {
+            // console.log(res);
+            // window.location.reload();
+            $.get({
+              url: BigNew.comment_list,
+              data: {
+                page: myPage,
+                perpage: myPerpage
+              },
+              success: function (res) {
+                if (res.code == 200) {
+                  var htmlStr = template('comment-list', res);
+                  $('tbody').html(htmlStr);
+                }
+              }
+            })
+          }
+        })
+      })
+
+
+      //给通过/批准按钮注册事件 comment_pass
+      $('tbody').on('click', '.btn-pass', function (e) {
+        e.preventDefault();
+        var id = $(this).attr('data-id');
+        $.post({
+          url: BigNew.comment_pass,
+          data: {
+            id: id
+          },
+          success: function (res) {
+            $.get({
+              url: BigNew.comment_list,
+              data: {
+                page: myPage,
+                perpage: myPerpage
+              },
+              success: function (res) {
+                if (res.code == 200) {
+                  var htmlStr = template('comment-list', res);
+                  $('tbody').html(htmlStr);
+                }
+              }
+            })
+          }
+        })
+      })
+
+      //给删除按钮注册事件 comment_delete
+      $('tbody').on('click', '.btn-delete', function (e) {
+        e.preventDefault();
+        var id = $(this).attr('data-id');
+        if (confirm('你确定要真的删除吗？')) {
+          $.post({
+            url: BigNew.comment_delete,
+            data: {
+              id: id
+            },
+            success: function (res) {
+              $.get({
+                url: BigNew.comment_list,
+                data: {
+                  page: myPage,
+                  perpage: myPerpage
+                },
+                success: function (res) {
+                  if (res.code == 200) {
+                    var htmlStr = template('comment-list', res);
+                    $('tbody').html(htmlStr);
+                  }
+                }
+              })
+            }
+          })
+        }
+      })
+    })
+  </script>
 </body>
 
 </html>
