@@ -55,7 +55,7 @@
 
     <div class="main_con clearfix">
         <div class="left_con setfr">
-            <div class="breadcrumb">
+            <!-- <div class="breadcrumb">
                 当前位置： <a href="#">首页</a> &gt; <a href="#">科技</a> &gt; 文章详情
             </div>
             <h3 class="article_title">马斯克的新花样？连接人脑和电脑的初创公司又筹了一笔钱</h3>
@@ -95,7 +95,7 @@
 
             <div class="comment_count">
                 4条评论
-            </div>
+            </div> -->
 
             <div class="comment_list_con">
                 <div class="comment_detail_list">
@@ -209,6 +209,84 @@
     <script src="./js/template-web.js"></script>
     <script src="./js/jquery-1.12.4.min.js"></script>
 
+    <script>
+        const htmlArr = $('.common_news_list').map(function (item) {
+            return`<div class="breadcrumb">
+                当前位置： <a href="#">首页</a> &gt; <a href="#">科技</a> &gt; 文章详情
+            </div>
+            <h3 class="article_title">马斯克的新花样？连接人脑和电脑的初创公司又筹了一笔钱</h3>
+            <div class="article_info">杰克 发布于 2019-05-08 07:08:46&nbsp;&nbsp;&nbsp;分类: 奇趣事&nbsp;&nbsp;&nbsp;阅读:
+                (98)&nbsp;&nbsp;&nbsp;评论: (0)</div>
+            <div class="article_con">
+
+                <p>“上天入地”还不够？硅谷“钢铁侠”马斯克名下一家低调的公司最近又融了一大笔钱。</p>
+
+                <p>马斯克投资的一家小型且不为人熟知的脑机接口（brain-computer
+                    interface）公司Neuralink披露，该公司融到了3900万美元，虽然不及公司计划的融资额5100万美元，但也比上次的融资多了不少。</p>
+
+                <p>两年前该公司曾计划融资1亿美元，但只拿到了2700万美元的融资。</p>
+
+                <p>在Neuralink递交给美国证券交易委员会（SEC）的材料中，并没有披露融资是否来自传统的风险投资者或者来自该公司的员工。</p>
+
+                <p>2016年，Neuralink在美国加利福尼亚州以医学研究公司的名义成立，之后一直低调运行。</p>
+
+            </div>
+            <div class="article_links">
+                上一篇： <a href="#">世界第一台可以玩游戏的冰箱</a><br>
+                下一篇： <a href="#">世界第一个可以玩游戏的马桶、世界上第一个可以玩游戏的茶杯</a>
+            </div>
+
+            <form action="" class="comment_form">
+                <div class="form_group">
+                    <label>用户名：</label>
+                    <input type="text" placeholder="请输入用户名" class="comment_name">
+                </div>
+                <div class="form_group">
+                    <label>评论内容：</label>
+                    <textarea placeholder="请发表您的评论" class="comment_input"></textarea>
+                </div>
+                <div class="form_group">
+                    <input type="submit" name="" value="评 论" class="comment_sub"></div>
+            </form>
+
+            <div class="comment_count">
+                4条评论
+            </div>`
+        })
+    </script>
+
+    <script>
+        $(function () {
+            // var artId = window.location.search;
+            // console.log(artId);
+
+            //用来将接收的字符串参数转换为对象
+            function searchStr2obj(str) {
+                str = str.slice(1);
+                searchArr = str.split('&');
+                var obj = {};
+                for (var key in searchArr) {
+                    var tempArr = searchArr[key].split('=');
+                    obj[tempArr[0]] = tempArr[1];
+                }
+                return obj;
+            };
+            var artId = searchStr2obj(window.location.search).id;
+            // console.log(artId);
+            $.get({
+                url:'http://localhost:8080/api/v1/index/article',
+                data:{
+                    id: artId
+                },
+                success:function(res){
+                    // console.log(res);
+                    var htmlStr = template('article-list',res)
+                    // console.log(htmlStr);
+                    $('.setfr').html(htmlStr)
+                }
+            })
+        })
+    </script>
 </body>
 
 </html>
